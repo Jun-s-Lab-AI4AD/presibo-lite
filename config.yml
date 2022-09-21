@@ -1,0 +1,10 @@
+default:
+  dbconf: 
+    server: 'example.amazonaws.com'
+    uid: 'exampleuser'
+    pwd: 'examplepassword'  
+    port: 3306
+    database: '<database/schema_name>'
+  login:
+    user1: 'exampleuser2'
+    pwd1: 'examplepassword2'

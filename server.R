@@ -116,48 +116,6 @@ server <- function(input, output, session) {
                                   id1 = input$predFilter
           )
       }
-      else if(input$var == "Biomarker-PET-FDG-Angular"){
-          query <- sqlInterpolate(conn, varQuery2,
-                                  id = dbQuoteIdentifier(conn, 'Nho_ADNI_GWAS_Variant_PET_FDG_ANGULAR_ALL_AgeSexAdj'),
-                                  id1 = input$predFilter
-          )
-      }
-      else if(input$var == "Biomarker-PET-FDG-Cingulate"){
-        query <- sqlInterpolate(conn, varQuery2,
-                                id = dbQuoteIdentifier(conn, 'Nho_ADNI_GWAS_Variant_PET_FDG_CINGULATE_ALL_AgeSexAdj'),
-                                id1 = input$predFilter
-        )
-      }
-      else if(input$var == "Biomarker-PET-FDG-Temporal"){
-        query <- sqlInterpolate(conn, varQuery2,
-                                id = dbQuoteIdentifier(conn, 'Nho_ADNI_GWAS_Variant_PET_FDG_TEMPORAL_ALL_AgeSexAdj'),
-                                id1 = input$predFilter
-        )
-      }
-      else if(input$var == "Biomarker-MRI-EntCtx"){
-        query <- sqlInterpolate(conn, varQuery2,
-                                id = dbQuoteIdentifier(conn, 'Nho_ADNI_GWAS_Variant_MRI_EntCtx_ALL_AgeSexEduICVAdj'),
-                                id1 = input$predFilter
-        )
-      }
-      else if(input$var == "Biomarker-MRI-HippVol"){
-        query <- sqlInterpolate(conn, varQuery2,
-                                id = dbQuoteIdentifier(conn, 'Nho_ADNI_GWAS_Variant_MRI_HippVol_ALL_AgeSexEduICVAdj'),
-                                id1 = input$predFilter
-        )
-      }
-      else if(input$var == "Biomarker-MRI-ParietalCtx"){
-        query <- sqlInterpolate(conn, varQuery2,
-                                id = dbQuoteIdentifier(conn, 'Nho_ADNI_GWAS_Variant_MRI_ParietalCtx_ALL_AgeSexEduICVAdj'),
-                                id1 = input$predFilter
-        )
-      }
-      else if(input$var == "Biomarker-MRI-TemporalCtx"){
-        query <- sqlInterpolate(conn, varQuery2,
-                                id = dbQuoteIdentifier(conn, 'Nho_ADNI_GWAS_Variant_MRI_TemporalCtx_ALL_AgeSexEduICVAdj'),
-                                id1 = input$predFilter
-        )
-      }
       print(query)
     # } # end of if (strsplit(input$targetSearch, ":") == input$targetSearch)
     dbGetQuery(conn, query)
@@ -211,34 +169,6 @@ server <- function(input, output, session) {
                           UNION
                           SELECT gene_id, "brain tissue", "all-meta3" AS "Subgroup", meta3_all_Zscore,
                           		meta3_all_P AS "P Value"
-                          		FROM `presibo1`.`eqtl_master_view`
-                          UNION
-                          SELECT gene_id, "astrocyte", "all", ast_avg_logFC, 
-                          		ast_p_val
-                          		FROM `presibo1`.`eqtl_master_view`
-                          UNION
-                          SELECT gene_id, "endothelial", "all", end_avg_logFC,
-                          		end_p_val
-                          		FROM `presibo1`.`eqtl_master_view`
-                          UNION
-                          SELECT gene_id, "excitory neuron", "all",
-                          		exn_avg_logFC, exn_p_val
-                          		FROM `presibo1`.`eqtl_master_view`
-                          UNION
-                          SELECT gene_id, "inhibitory neuron", "all",
-                          		inn_avg_logFC, inn_p_val
-                          		FROM `presibo1`.`eqtl_master_view`
-                          UNION
-                          SELECT gene_id, "microglia", "all",
-                          		mic_avg_logFC, mic_p_val
-                          		FROM `presibo1`.`eqtl_master_view`
-                          UNION
-                          SELECT gene_id, "oligodendrocyte", "all",
-                          		oli_avg_logFC, oli_p_val
-                          		FROM `presibo1`.`eqtl_master_view`
-                          UNION
-                          SELECT gene_id, "OPC", "all",
-                          		opc_avg_logFC, opc_p_val
                           		FROM `presibo1`.`eqtl_master_view`;'
     print(initQuery2)
     dbGetQuery(conn, initQuery2)
@@ -446,9 +376,7 @@ server <- function(input, output, session) {
     dbGetQuery(conn, initQuery2)
     
 
-    query <- "SELECT gene_id AS `Gene ID`, meta3_all_P AS `Meta3All-P`, ast_p_val AS `Astrocyte-P`, end_p_val AS `Endothelial-P`, 
-              		    exn_p_val AS `ExcitoryNeuron-P`, inn_p_val AS `InhibitoryNeuron-P`, mic_p_val AS `Microglia-P`, 
-                      oli_p_val AS `Oligodendrocyte-P`, opc_p_val AS `OPC-P`, meta2_braak_P AS `Meta2-BRAAK-P`,
+    query <- "SELECT gene_id AS `Gene ID`, meta3_all_P AS `Meta3All-P`, meta2_braak_P AS `Meta2-BRAAK-P`,
                       meta2_cerad_P AS `Meta2-CERAD-P`, PSD95_P AS `PPP2CA-P`, Ab42_P AS `Ab42-P`, ptau181_P AS `ptau181-P`, 
                       ptau231_P AS `ptau231-P`, ptau181_ttau_P AS `ptau181_ttau-P`, ptau231_ttau_P AS `ptau231_ttau-P`, 
                       C4A_P AS `C4A-P`, C4B_P AS `C4B-P`, PPP2CB_P AS `PPP2CB-P`, PPP2CA_P AS `PPP2CA-P`
@@ -553,34 +481,6 @@ server <- function(input, output, session) {
     )
     on.exit(dbDisconnect(conn), add = TRUE)
     
-    # if (input$viewtbl_rows_selected == 1) {
-    #   query <- paste0("SELECT * FROM module_genes_m17;")
-    #   if (input$sigGeneSearch2 != "") {
-    #     query <- paste0("SELECT * FROM module_genes_m17 
-    #                     WHERE CONCAT(ENSGID, `Gene Name`, `Tissue P`, `Ast P`, `End P`, `Exn P`, `Inn P`, `Mic P`, `Oli P`, `Opc P`) 
-    #                     LIKE '%", input$sigGeneSearch2, "%';")
-    #   }
-    #   dbGetQuery(conn, query)
-    # }
-    # else if (input$viewtbl_rows_selected == 2) {
-    #   query <- paste0("SELECT * FROM module_genes_m2;")
-    #   if (input$sigGeneSearch2 != "") {
-    #     query <- paste0("SELECT * FROM module_genes_m2 
-    #                     WHERE CONCAT(ENSGID, `Gene Name`, `Tissue P`, `Ast P`, `End P`, `Exn P`, `Inn P`, `Mic P`, `Oli P`, `Opc P`) 
-    #                     LIKE '%", input$sigGeneSearch2, "%';")
-    #   }
-    #   dbGetQuery(conn, query)
-    # }
-    # else if (input$viewtbl_rows_selected == 3) {
-    #   query <- paste0("SELECT * FROM module_genes_m45;")
-    #   if (input$sigGeneSearch2 != "") {
-    #     query <- paste0("SELECT * FROM module_genes_m45 
-    #                     WHERE CONCAT(ENSGID, `Gene Name`, `Tissue P`, `Ast P`, `End P`, `Exn P`, `Inn P`, `Mic P`, `Oli P`, `Opc P`) 
-    #                     LIKE '%", input$sigGeneSearch2, "%';")
-    #   }
-    #   dbGetQuery(conn, query)
-    # }
-    
     p = 1
     if(input$netGene2 != ""){
       p = input$netGene2
@@ -671,6 +571,10 @@ server <- function(input, output, session) {
     } else if(input$source == "Brain-Brain Proteome"){
         query <- "SELECT * FROM `presibo1`.`selected_networks_ref_view`
                   WHERE omics_source = 'proteome'
+                  AND (discovery_tissue = 'brain' AND validation_tissue = 'brain');"
+    } else if(input$source == "Brain-Brain Transcriptome"){
+      query <- "SELECT * FROM `presibo1`.`selected_networks_ref_view`
+                  WHERE omics_source = 'Bulk_RNA_seq'
                   AND (discovery_tissue = 'brain' AND validation_tissue = 'brain');"
     } else if(input$source == "All"){
         query <-"SELECT * FROM `presibo1`.`selected_networks_ref_view`"

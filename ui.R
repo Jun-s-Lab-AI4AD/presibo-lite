@@ -76,14 +76,7 @@ ui <- dashboardPage(
                                                        "Outcome-Plaque (CERAD)", 
                                                        "Biomarker-CSF.Abeta", 
                                                        "Biomarker-CSF.pTau",
-                                                       "Biomarker-CSF.tTau",
-                                                       "Biomarker-PET-FDG-Angular", 
-                                                       "Biomarker-PET-FDG-Cingulate",
-                                                       "Biomarker-PET-FDG-Temporal",
-                                                       "Biomarker-MRI-EntCtx",
-                                                       "Biomarker-MRI-HippVol",
-                                                       "Biomarker-MRI-ParietalCtx",
-                                                       "Biomarker-MRI-TemporalCtx"
+                                                       "Biomarker-CSF.tTau"
                                                        ),
                                            selected = "Outcome-Clinical Diagnosis")
                              ),
@@ -315,7 +308,8 @@ ui <- dashboardPage(
                                                      "Brain-Brain Cell-Level (Oligodendrocyte) Transcriptome",
                                                      "Brain-Brain Cell-Level (OPC) Transcriptome",
                                                      "Brain-Blood Transcriptome",
-                                                     "Brain-Brain Proteome"),
+                                                     "Brain-Brain Proteome",
+                                                     "Brain-Brain Transcriptome"),
                                          selected = "All"
                              ) 
                            ),

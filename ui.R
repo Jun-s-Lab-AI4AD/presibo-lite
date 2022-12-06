@@ -301,14 +301,6 @@ ui <- dashboardPage(
                              selectInput("source",
                                          label = "Source of Network:",
                                          choices = c("All",
-                                                     "Brain-Brain Cell-Level (Astrocyte) Transcriptome",
-                                                     "Brain-Brain Cell-Level (Excitatory Neuron) Transcriptome",
-                                                     "Brain-Brain Cell-Level (Inhibitory Neuron) Transcriptome",
-                                                     "Brain-Brain Cell-Level (Microglia) Transcriptome",
-                                                     "Brain-Brain Cell-Level (Oligodendrocyte) Transcriptome",
-                                                     "Brain-Brain Cell-Level (OPC) Transcriptome",
-                                                     "Brain-Blood Transcriptome",
-                                                     "Brain-Brain Proteome",
                                                      "Brain-Brain Transcriptome"),
                                          selected = "All"
                              ) 

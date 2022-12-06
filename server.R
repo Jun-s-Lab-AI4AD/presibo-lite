@@ -66,18 +66,14 @@ server <- function(input, output, session) {
       print(initQuery)
       dbSendQuery(conn, initQuery)
       
-      varQuery <- "SELECT t1.variant_id, t1.snp_id, t1.a1, t1.a2, t1.freq1, t1.beta, t1.se, t1.p,
+      varQuery <- "SELECT t1.variant_id AS `Variant ID`, t1.snp_id AS `SNP ID`, t1.a1 AS `Allele 1`, t1.a2 AS `Allele 2`, 
+                        ROUND(t1.freq1, 3) AS `Freq1`, ROUND(t1.beta, 3) AS `BETA`, ROUND(t1.se, 3) AS `SE`, t1.p AS `P`,
                         t2.gene_id, t2.geneid_left, t2.geneid_right, t2.dist_left, t2.dist_right
                         FROM ?id t1
                         INNER JOIN `view_variant_reference_gene` t2
                         USING (variant_id)
                         WHERE t1.p <= ?id1;"
-      varQuery2 <- "SELECT t1.variant_id, t1.snp_id, t1.a1, t1.a2, t1.freq1, t1.effect as beta, t1.se, t1.p,
-                        t2.gene_id, t2.geneid_left, t2.geneid_right, t2.dist_left, t2.dist_right
-                        FROM ?id t1
-                        INNER JOIN `view_variant_reference_gene` t2
-                        USING (variant_id)
-                        WHERE t1.p <= ?id1;"
+
       
       # after SBO selection
       if(input$var == "Outcome-Clinical Diagnosis"){
@@ -269,7 +265,7 @@ server <- function(input, output, session) {
                       WHERE `P-Value` < ?id;"
         query <- sqlInterpolate(conn, varQuery, id = input$downSig2)
     } else {
-        query <- "SELECT * FROM `presibo1`.`signature_master_view`;"
+        query <- "SELECT `Gene ID`, `Source`, `Subgroup`, `Outcome`, ROUND(`Beta`, 3) AS `Beta`, ROUND(`SE`, 3) AS `SE`, `P-Value` FROM `presibo1`.`signature_master_view`;"
     }
     
     dbGetQuery(conn, query)
@@ -306,11 +302,18 @@ server <- function(input, output, session) {
     print(initQuery)
     dbGetQuery(conn, initQuery)
     
-    varQuery <- 'SELECT presibo_network_id, module_id, omics_source, 
-                  discovery_study, discovery_tissue, 
-                  validation_study, validation_tissue, 
-              		tissue_or_cell_type, module_color, zsummary, 
-              		module_pval_ad_vs_asymad, module_pval_ad
+    varQuery <- 'SELECT presibo_network_id AS `PreSiBO Network ID`, 
+                  module_id AS `Module ID`, 
+                  omics_source AS `Omics Source`, 
+                  discovery_study AS `Discovery Study`, 
+                  discovery_tissue AS `Discovery Tissue`, 
+                  validation_study AS `Validation Study`, 
+                  validation_tissue AS `Validation Tissue`, 
+              		tissue_or_cell_type AS `Tissue/Cell Type`,
+              		module_color AS `Module Color`, 
+              		zsummary AS `Z Summary`, 
+              		module_pval_ad_vs_asymad AS `P-val (ADvsAsymAD)`, 
+              		module_pval_ad AS `P-val (AD)`
               		FROM `presibo1`.`network_reference_table`
               		WHERE presibo_network_id IN
               			(SELECT presibo_network_id
@@ -393,7 +396,7 @@ server <- function(input, output, session) {
     content = function(file) {write_xlsx(dfSigNet2(), path = file)}
   )
   
-  ##############Network Guided Genetic Search##############
+  ##############Network Guided Genetic Search (Network Subgroups)##############
   output$ngs_output1 <- renderText({
     paste(input$source1)
   })
@@ -425,12 +428,21 @@ server <- function(input, output, session) {
                   	FROM `presibo1`.`presibo_Jaeyoon_ADNI_Brain_Network`;"
     dbSendQuery(conn, initQuery)
     
+    
     varInitQuery2 <- "CREATE OR REPLACE VIEW `presibo1`.`filtered_network_ref_view` AS
-                        SELECT presibo_network_id, module_id, omics_source, discovery_study, 
-                        discovery_tissue, validation_study, validation_tissue, 
-                    		tissue_or_cell_type, module_color, zsummary, 
-                    		module_pval_ad_vs_asymad, module_pval_ad
-                    		FROM `presibo1`.`network_reference_table`
+                        SELECT presibo_network_id AS `PreSiBO Network ID`, 
+                        module_id AS `Module ID`, 
+                        omics_source AS `Omics Source`, 
+                        discovery_study AS `Discovery Study`, 
+                        discovery_tissue AS `Discovery Tissue`, 
+                        validation_study AS `Validation Study`, 
+                        validation_tissue AS `Validation Tissue`, 
+                        tissue_or_cell_type AS `Tissue/Cell Type`,
+                        module_color AS `Module Color`, 
+                        zsummary AS `Z Summary`, 
+                        module_pval_ad_vs_asymad AS `P-val (ADvsAsymAD)`, 
+                        module_pval_ad AS `P-val (AD)`
+                    	FROM `presibo1`.`network_reference_table`
                     		WHERE presibo_network_id IN
                     			(SELECT presibo_network_id
                     			FROM `presibo1`.`all_networks_view`
@@ -486,9 +498,18 @@ server <- function(input, output, session) {
       p = input$netGene2
     }
     
-    varQuery <- "SELECT presibo_network_id, prs_study, network_subgroup, network_study, 
-              		network_data, adjustment, prs_gwas_source, network_color, 
-              		outcome, beta, se, p
+    varQuery <- "SELECT presibo_network_id AS `PreSiBO Network ID`, 
+                  prs_study AS `PRS Study`, 
+                  network_subgroup AS `Network Subgroup`, 
+                  network_study AS `Network Study`, 
+              		network_data AS `Network Data`, 
+              		adjustment AS `Adjustment`, 
+              		prs_gwas_source AS `PRS GWAS Source`, 
+              		network_color AS `Network Color`, 
+              		outcome AS `Outcome`, 
+              		beta AS `BETA`, 
+              		se AS `SE`, 
+              		p AS `P`
               FROM presibo1.module_prs_associations
               WHERE presibo_network_id = ?id
               AND p < ?pval;"
@@ -527,52 +548,31 @@ server <- function(input, output, session) {
     print(initQuery)
     dbSendQuery(conn, initQuery)
     
+    
+    
     varInitQuery2 <- "CREATE OR REPLACE VIEW `presibo1`.`selected_networks_ref_view` AS
-                      	SELECT presibo_network_id, module_id, omics_source, discovery_study, discovery_tissue, validation_study, validation_tissue, 
-                      			tissue_or_cell_type, module_color, zsummary, 
-                      			module_pval_ad_vs_asymad, module_pval_ad
-                      			FROM `presibo1`.`network_reference_table`
-                      			WHERE presibo_network_id IN
-                      				(SELECT presibo_network_id
-                      				FROM `presibo1`.`all_networks_view`
-                      				WHERE gene_id = ?id);"
+                      	SELECT presibo_network_id AS `PreSiBO Network ID`, 
+                        module_id AS `Module ID`, 
+                        omics_source AS `Omics Source`, 
+                        discovery_study AS `Discovery Study`, 
+                        discovery_tissue AS `Discovery Tissue`, 
+                        validation_study AS `Validation Study`, 
+                        validation_tissue AS `Validation Tissue`, 
+                        tissue_or_cell_type AS `Tissue/Cell Type`,
+                        module_color AS `Module Color`, 
+                        zsummary AS `Z Summary`, 
+                        module_pval_ad_vs_asymad AS `P-val (ADvsAsymAD)`, 
+                        module_pval_ad AS `P-val (AD)`
+                      FROM `presibo1`.`network_reference_table`
+                  			WHERE presibo_network_id IN
+                  				(SELECT presibo_network_id
+                  				FROM `presibo1`.`all_networks_view`
+                  				WHERE gene_id = ?id);"
     initQuery2 <- sqlInterpolate(conn, varInitQuery2, id = input$netSearch)
     print(initQuery2)
     dbSendQuery(conn, initQuery2)
     
-    if(input$source == "Brain-Brain Cell-Level (Astrocyte) Transcriptome"){
-        query <- "SELECT * FROM `presibo1`.`selected_networks_ref_view`
-                  WHERE omics_source = 'transcriptome'
-                  AND tissue_or_cell_type = 'Ast';"
-    } else if(input$source == "Brain-Brain Cell-Level (Excitatory Neuron) Transcriptome"){
-        query <- "SELECT * FROM `presibo1`.`selected_networks_ref_view`
-                    WHERE omics_source = 'transcriptome'
-                    AND tissue_or_cell_type = 'Ex';"
-    } else if(input$source == "Brain-Brain Cell-Level (Inhibitory Neuron) Transcriptome"){
-        query <- "SELECT * FROM `presibo1`.`selected_networks_ref_view`
-                    WHERE omics_source = 'transcriptome'
-                    AND tissue_or_cell_type = 'In';"
-    } else if(input$source == "Brain-Brain Cell-Level (Microglia) Transcriptome"){
-        query <- "SELECT * FROM `presibo1`.`selected_networks_ref_view`
-                      WHERE omics_source = 'transcriptome'
-                      AND tissue_or_cell_type = 'Mic';"
-    } else if(input$source == "Brain-Brain Cell-Level (Oligodendrocyte) Transcriptome"){
-        query <- "SELECT * FROM `presibo1`.`selected_networks_ref_view`
-                        WHERE omics_source = 'transcriptome'
-                        AND tissue_or_cell_type = 'Oli';"
-    } else if(input$source == "Brain-Brain Cell-Level (OPC) Transcriptome"){
-        query <- "SELECT * FROM `presibo1`.`selected_networks_ref_view`
-                        WHERE omics_source = 'transcriptome'
-                        AND tissue_or_cell_type = 'Opc';"
-    } else if(input$source == "Brain-Blood Transcriptome"){
-        query <- "SELECT * FROM `presibo1`.`selected_networks_ref_view`
-                  WHERE omics_source = 'Bulk_RNA_seq'
-                  AND ((discovery_tissue = 'brain' AND validation_tissue = 'blood') OR (discovery_tissue = 'blood' AND validation_tissue = 'brain'));"
-    } else if(input$source == "Brain-Brain Proteome"){
-        query <- "SELECT * FROM `presibo1`.`selected_networks_ref_view`
-                  WHERE omics_source = 'proteome'
-                  AND (discovery_tissue = 'brain' AND validation_tissue = 'brain');"
-    } else if(input$source == "Brain-Brain Transcriptome"){
+    if(input$source == "Brain-Brain Transcriptome"){
       query <- "SELECT * FROM `presibo1`.`selected_networks_ref_view`
                   WHERE omics_source = 'Bulk_RNA_seq'
                   AND (discovery_tissue = 'brain' AND validation_tissue = 'brain');"
@@ -609,6 +609,8 @@ server <- function(input, output, session) {
     content = function(file) {write_xlsx(dfNetDrug(), path = file)}
   )
   
+##############Network Drug Search- Bottom table############## 
+  
   dfNetDrug2 <- reactive({
     conn <- dbConnect(
       MySQL(),
@@ -619,7 +621,15 @@ server <- function(input, output, session) {
     )
     on.exit(dbDisconnect(conn), add = TRUE)
     
-    varQuery <- "SELECT * FROM `presibo1`.`AI4AD_Gene_GGDD_BIDRH_all_drugs`
+    varQuery <- "SELECT
+                  pert_iname AS `Drug Name`,
+                  clinical_phase AS `Clinical Phase`,
+                  moa AS `Mechanism of Action`,
+                  disease_area AS `Disease Area`,
+                  indication AS `Indication`,
+                  ensgid AS `ENSGID`,
+                  gene_id AS `Gene ID`
+                 FROM `presibo1`.`AI4AD_Gene_GGDD_BIDRH_all_drugs`
                   WHERE ensgid IN 
                   (SELECT ensgid FROM `presibo1`.`all_networks_view`
                   		WHERE presibo_network_id = ?id);"

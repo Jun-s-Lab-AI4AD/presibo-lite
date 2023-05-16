@@ -67,8 +67,9 @@ server <- function(input, output, session) {
       dbSendQuery(conn, initQuery)
       
       varQuery <- "SELECT t1.variant_id AS `Variant ID`, t1.snp_id AS `SNP ID`, t1.a1 AS `Allele 1`, t1.a2 AS `Allele 2`, 
-                        ROUND(t1.freq1, 3) AS `Freq1`, ROUND(t1.beta, 3) AS `BETA`, ROUND(t1.se, 3) AS `SE`, t1.p AS `P`,
-                        t2.gene_id, t2.geneid_left, t2.geneid_right, t2.dist_left, t2.dist_right
+                        ROUND(t1.freq1, 3) AS `Frequency1`, ROUND(t1.beta, 3) AS `BETA`, ROUND(t1.se, 3) AS `SE`, t1.p AS `P`,
+                        t2.gene_id AS `Gene`, t2.geneid_left AS `Gene Left`, t2.geneid_right AS `Gene Right`, 
+                        t2.dist_left AS `Distance Left (bps)`, t2.dist_right AS `Distance Right (bps)`
                         FROM ?id t1
                         INNER JOIN `view_variant_reference_gene` t2
                         USING (variant_id)
@@ -121,10 +122,10 @@ server <- function(input, output, session) {
     datatable(dfPred())
   })
   
-  output$downloadPred <- downloadHandler(
-    filename = function() { paste("Predictor", "xlsx", sep = ".")},
-    content = function(file) {write_xlsx(dfPred(), path = file)}
-  )
+  # output$downloadPred <- downloadHandler(
+  #   filename = function() { paste("Predictor", "xlsx", sep = ".")},
+  #   content = function(file) {write_xlsx(dfPred(), path = file)}
+  # )
   
   output$tbl_selected <- renderText({ 
     if (input$var != '') {
@@ -186,10 +187,10 @@ server <- function(input, output, session) {
     datatable(dfSig())
   })
   
-  output$downloadSig <- downloadHandler(
-    filename = function() { paste("Signature", "xlsx", sep = ".")},
-    content = function(file) {write_xlsx(dfSig(), path = file)}
-  )
+  # output$downloadSig <- downloadHandler(
+  #   filename = function() { paste("Signature", "xlsx", sep = ".")},
+  #   content = function(file) {write_xlsx(dfSig(), path = file)}
+  # )
   
   ##############Signature Search2 - Bottom table##############
   dfSig2 <- reactive({
@@ -275,10 +276,10 @@ server <- function(input, output, session) {
     datatable(dfSig2())
   })
   
-  output$downloadSig2 <- downloadHandler(
-    filename = function() { paste("Signature", "xlsx", sep = ".")},
-    content = function(file) {write_xlsx(dfSig2(), path = file)}
-  )
+  # output$downloadSig2 <- downloadHandler(
+  #   filename = function() { paste("Signature", "xlsx", sep = ".")},
+  #   content = function(file) {write_xlsx(dfSig2(), path = file)}
+  # )
   
   ##############Signature Guided Network Search##############
   dfSigNet <- reactive({
@@ -333,10 +334,10 @@ server <- function(input, output, session) {
     ) %>% formatStyle(2, cursor = 'pointer')
   })
   
-  output$downloadSigNet <- downloadHandler(
-    filename = function() { paste("Signature_Network", "xlsx", sep = ".")},
-    content = function(file) {write_xlsx(dfSigNet(), path = file)}
-  )
+  # output$downloadSigNet <- downloadHandler(
+  #   filename = function() { paste("Signature_Network", "xlsx", sep = ".")},
+  #   content = function(file) {write_xlsx(dfSigNet(), path = file)}
+  # )
   
   output$sgn_output1 <- renderText({ 
     if (input$netSearch != '') {
@@ -391,15 +392,12 @@ server <- function(input, output, session) {
     datatable(dfSigNet2())
   })
   
-  output$downloadSigNet2 <- downloadHandler(
-    filename = function() { paste("Signature_Network", "xlsx", sep = ".")},
-    content = function(file) {write_xlsx(dfSigNet2(), path = file)}
-  )
+  # output$downloadSigNet2 <- downloadHandler(
+  #   filename = function() { paste("Signature_Network", "xlsx", sep = ".")},
+  #   content = function(file) {write_xlsx(dfSigNet2(), path = file)}
+  # )
   
   ##############Network Guided Genetic Search (Network Subgroups)##############
-  output$ngs_output1 <- renderText({
-    paste(input$source1)
-  })
   
   dfNetGene <- reactive({
     conn <- dbConnect(
@@ -412,15 +410,17 @@ server <- function(input, output, session) {
     on.exit(dbDisconnect(conn), add = TRUE)
     
     p=1
-    if(input$source2 == "P<0.05"){
-      p = 0.05
-    } else if(input$source2 == "P<0.001"){
-      p = 0.001
-    } else if(input$source2 == "P<5E-08"){
-      p = 5e-8
-    } else {
-      p = 1
-    }
+    ## DO NOT REMOVE
+    ## uncomment when more p-value PRSs are available
+    # if(input$source2 == "P<0.05"){
+    #   p = 0.05
+    # } else if(input$source2 == "P<0.001"){
+    #   p = 0.001
+    # } else if(input$source2 == "P<5E-08"){
+    #   p = 5e-8
+    # } else {
+    #   p = 1
+    # }
     z=-9999
     
     initQuery <- "CREATE OR REPLACE VIEW `presibo1`.`all_networks_view` AS
@@ -472,10 +472,10 @@ server <- function(input, output, session) {
     ) %>% formatStyle(2, cursor = 'pointer')
   })
   
-  output$downloadNetGene <- downloadHandler(
-    filename = function() { paste("Network_Genetic", "xlsx", sep = ".")},
-    content = function(file) {write_xlsx(dfNetGene(), path = file)}
-  )
+  # output$downloadNetGene <- downloadHandler(
+  #   filename = function() { paste("Network_Genetic", "xlsx", sep = ".")},
+  #   content = function(file) {write_xlsx(dfNetGene(), path = file)}
+  # )
   
   output$ngs_output2 <- renderText({
     row_count = input$viewtbl_rows_selected
@@ -524,10 +524,10 @@ server <- function(input, output, session) {
     datatable(dfNetGene2())
   })
   
-  output$downloadNetGene2 <- downloadHandler(
-    filename = function() { paste("Signature_Network", "xlsx", sep = ".")},
-    content = function(file) {write_xlsx(dfNetGene2(), path = file)}
-  )
+  # output$downloadNetGene2 <- downloadHandler(
+  #   filename = function() { paste("Signature_Network", "xlsx", sep = ".")},
+  #   content = function(file) {write_xlsx(dfNetGene2(), path = file)}
+  # )
   
 
   
@@ -574,8 +574,8 @@ server <- function(input, output, session) {
     
     if(input$source == "Brain-Brain Transcriptome"){
       query <- "SELECT * FROM `presibo1`.`selected_networks_ref_view`
-                  WHERE omics_source = 'Bulk_RNA_seq'
-                  AND (discovery_tissue = 'brain' AND validation_tissue = 'brain');"
+                  WHERE `Omics Source` = 'Bulk_RNA_seq'
+                  AND (`Discovery Tissue` = 'brain' AND `Validation Tissue` = 'brain');"
     } else if(input$source == "All"){
         query <-"SELECT * FROM `presibo1`.`selected_networks_ref_view`"
     }
@@ -590,9 +590,6 @@ server <- function(input, output, session) {
               ) %>% formatStyle(2, cursor = 'pointer')
   })
   
-  #output$viewtable1 = renderDataTable(dfNetDrug(), server = FALSE, selection = 'single')
-  #output$viewtable12 = renderPrint(input$viewtable1_rows_selected)
-  
   output$ngd_output1 <- renderText({
     if (input$source != '') {
       paste(input$source)
@@ -604,10 +601,10 @@ server <- function(input, output, session) {
     paste("Approved drugs targeting genes in", dfNetDrug()[row_count, 2])
   })
   
-  output$downloadNetDrug <- downloadHandler(
-    filename = function() { paste("Network_Drug", "xlsx", sep = ".")},
-    content = function(file) {write_xlsx(dfNetDrug(), path = file)}
-  )
+  # output$downloadNetDrug <- downloadHandler(
+  #   filename = function() { paste("Network_Drug", "xlsx", sep = ".")},
+  #   content = function(file) {write_xlsx(dfNetDrug(), path = file)}
+  # )
   
 ##############Network Drug Search- Bottom table############## 
   
@@ -643,10 +640,10 @@ server <- function(input, output, session) {
     datatable(dfNetDrug2())
   })
   
-  output$downloadNetDrug2 <- downloadHandler(
-    filename = function() { paste("Signature_Network", "xlsx", sep = ".")},
-    content = function(file) {write_xlsx(dfNetDrug2(), path = file)}
-  )
+  # output$downloadNetDrug2 <- downloadHandler(
+  #   filename = function() { paste("Signature_Network", "xlsx", sep = ".")},
+  #   content = function(file) {write_xlsx(dfNetDrug2(), path = file)}
+  # )
   
   ##############Drug Search##############
   dfInd <- reactive({
@@ -675,7 +672,13 @@ server <- function(input, output, session) {
     # }
     
     # coalesce replaces null with empty string. Makes sure concat does not concat with NULL
-    varQuery <- "SELECT presibo_drug_id, pert_iname AS drug_name, clinical_phase, moa, disease_area, indication, gene_id
+    varQuery <- "SELECT presibo_drug_id AS `PreSiBO Drug ID`, 
+                        pert_iname AS `Drug Name`, 
+                        clinical_phase AS `Clinical Test Phase`, 
+                        moa AS `Mechanism of Action`, 
+                        disease_area AS `Disease Area`, 
+                        indication AS `Indication`, 
+                        gene_id AS `Gene Target`
                   FROM AI4AD_Gene_GGDD_BIDRH_all_drugs
                   WHERE 
                   CONCAT(
@@ -702,10 +705,10 @@ server <- function(input, output, session) {
     )
   })
   
-  output$downloadIndic <- downloadHandler(
-    filename = function() { paste("Drug", "xlsx", sep = ".")},
-    content = function(file) {write_xlsx(dfInd(), path = file)}
-  )
+  # output$downloadIndic <- downloadHandler(
+  #   filename = function() { paste("Drug", "xlsx", sep = ".")},
+  #   content = function(file) {write_xlsx(dfInd(), path = file)}
+  # )
   
   
   

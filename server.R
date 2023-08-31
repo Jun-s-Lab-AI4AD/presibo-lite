@@ -543,7 +543,7 @@ server <- function(input, output, session) {
     on.exit(dbDisconnect(conn), add = TRUE)
     
     initQuery <- "CREATE OR REPLACE VIEW `presibo1`.`all_networks_view` AS
-                  	SELECT presibo_network_id, module_kme, gene_id
+                  	SELECT presibo_network_id, module_kme, gene_id, ensgid
                   	FROM `presibo1`.`presibo_Jaeyoon_ADNI_Brain_Network`;"
     print(initQuery)
     dbSendQuery(conn, initQuery)
@@ -629,10 +629,11 @@ server <- function(input, output, session) {
                  FROM `presibo1`.`AI4AD_Gene_GGDD_BIDRH_all_drugs`
                   WHERE ensgid IN 
                   (SELECT ensgid FROM `presibo1`.`all_networks_view`
-                  		WHERE presibo_network_id = ?id);"
+                  		WHERE presibo_network_id = ?id)
+                  AND clinical_phase='Launched';"
     selected_pn_number <- dfNetDrug()[input$viewtable1_rows_selected, 1]
     query <- sqlInterpolate(conn, varQuery, id = selected_pn_number)
-    
+    # print(query)
     dbGetQuery(conn, query)
   })
   

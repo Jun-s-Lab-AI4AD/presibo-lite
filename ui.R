@@ -12,6 +12,7 @@ library(writexl)
 library(formattable)
 library(pracma)
 library(shinymanager)
+library(igraph)
 
 ui <- dashboardPage(
   dashboardHeader(title = "PreSiBO Lite"),
@@ -263,6 +264,19 @@ ui <- dashboardPage(
                            style="overflow-x: auto;",
                            br(),
                            dataTableOutput("viewtbl12_1")
+                         ),
+                         
+                         ## Module graph plot
+                         div(
+                           style="display: inline-block;vertical-align:top;",
+                           br(),
+                           h4("Module Plot (Top 20 members)")
+                         ),
+                         
+                         div(
+                           br(),
+                           actionButton("genGraph", "Generate Graph"),
+                           plotOutput("igraphModulePlot", height = "600px", width = "800px")
                          )
 
                 ),

@@ -17,6 +17,8 @@ library(ggplot2)
 library(ggpubr)
 library(tidyverse)
 library(shinymanager)
+library(igraph)
+library(scales)
 
 config_file = "config_dp.yml"
 # define some credentials
@@ -396,6 +398,85 @@ server <- function(input, output, session) {
   #   filename = function() { paste("Signature_Network", "xlsx", sep = ".")},
   #   content = function(file) {write_xlsx(dfSigNet2(), path = file)}
   # )
+  
+  ## Module igraph
+  
+  ## graph generator function 
+  module_igraph <- function(){
+    conn <- dbConnect(
+      MySQL(),
+      dbname = "presibo1",
+      host = dbconf$server,
+      username = dbconf$uid,
+      password = dbconf$pwd
+    )
+    on.exit(dbDisconnect(conn), add = TRUE)
+    
+    # 1. get top N gene members - query top N gene members data
+    N = 20
+    row_count = input$viewtbl0_rows_selected
+    selected_pn_number = dfSigNet()[row_count,1]
+    
+    var_query_mem <- "SELECT * FROM `presibo1`.`all_networks_view`
+                		WHERE presibo_network_id = ?id
+                		ORDER BY module_kme DESC
+                		LIMIT ?n;" 
+    query_mem <- sqlInterpolate(conn, var_query_mem, 
+                                     id = selected_pn_number,
+                                     n = N)
+    
+    df_gene_mem <- dbGetQuery(conn, query_mem)
+    df_top_nodes <- df_gene_mem
+    
+    
+    # # 2. get top nodes tom edges
+    # df_edge <- read.csv("/restricted/projectnb/ai4ad/sahelijo/network/results/wgcna/networks/Ast-M10_edge.tsv", sep="\t")
+    # df_edge_subset <- df_edge[df_edge$from %in% df_top_nodes$ensgid & df_edge$to %in% df_top_nodes$ensgid, ]
+    
+    ## nodes specs
+    nodes <- df_top_nodes[, "gene_id"]
+    # from_nodes <- df_edge_subset$alt_from
+    # to_nodes <- df_edge_subset$alt_to
+    # edge_weights <- (rescale(df_edge_subset$tom, to = c(1,10)))
+    # edges <- data.frame(from = from_nodes, to = to_nodes, weight = edge_weights)
+    
+    df_node_sizes <- df_top_nodes[, c("gene_id", "module_kme")]
+    rownames(df_node_sizes) <- df_node_sizes$gene_id
+    
+    # # graph (if edge data present)
+    # g <- graph_from_data_frame(edges, directed = F)
+    # g <- igraph::simplify(g, remove.multiple = T)
+    
+    # graph (if edge data missing)
+    g <- make_full_graph(N)
+    V(g)$name <- nodes
+    
+    # assign node sizes
+    V(g)$size <- round(rescale(df_node_sizes[V(g)$name, "module_kme"], to = c(1,20)))
+    # E(g)$weight <- rescale(E(g)$weight, to = c(1,20))
+    
+    return(g)
+  }
+  
+  # plot igraph on Generate Graph button press
+  observeEvent(input$genGraph, {
+    # get PN number
+    row_count = input$viewtbl0_rows_selected
+    selected_pn_number = dfSigNet()[row_count,1]
+    # render plot
+    output$igraphModulePlot <- renderPlot({
+      if(!is.na(selected_pn_number)){
+        g <- module_igraph()  # Get the reactive graph data
+        plot(g, main = paste("PreSiBO Network ID:", selected_pn_number), 
+             vertex_color = "lightblue", vertex.label.cex = 0.8)
+      }
+    })
+  })
+  
+  # Reset the plot on new search
+  observeEvent(input$netSearch, {
+      output$igraphModulePlot <- NULL
+  })
   
   ##############Network Guided Genetic Search (Network Subgroups)##############
   

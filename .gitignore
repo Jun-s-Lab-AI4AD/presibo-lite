@@ -5,3 +5,5 @@
 .Ruserdata
 config_dp.yml
 rsconnect
+.Rprofile
+renv/*

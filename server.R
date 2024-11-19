@@ -31,6 +31,14 @@ credentials <- data.frame(
   stringsAsFactors = FALSE
 )
 
+# Helper function to enforce scientific notation on specified columns
+force_scientific <- function(data, columns, digits = 5) {
+  data[columns] <- lapply(data[columns], function(column) {
+    format(column, scientific = TRUE, digits = digits)
+  })
+  return(data)
+}
+
 server <- function(input, output, session) {
   
   # authorizing
@@ -120,8 +128,16 @@ server <- function(input, output, session) {
     dbGetQuery(conn, query)
   })
   
+  
+  
   output$tbl <- renderDataTable({
-    datatable(dfPred())
+    current_data <- dfPred()
+    # Apply scientific notation to the specified columns
+    formatted_data <- force_scientific(current_data, 
+                                       columns = c("BETA", "SE", "P"), 
+                                       digits = 5)
+    # Apply scientific notation on numeric cols
+    datatable(formatted_data)
   })
   
   # output$downloadPred <- downloadHandler(
@@ -186,7 +202,13 @@ server <- function(input, output, session) {
   })
   
   output$view <- renderDataTable({
-    datatable(dfSig())
+    current_data <- dfSig()
+    # Apply scientific notation to the specified columns
+    formatted_data <- force_scientific(current_data, 
+                                       columns = c("P-Value"), 
+                                       digits = 5)
+    # Apply scientific notation on numeric cols
+    datatable(formatted_data)
   })
   
   # output$downloadSig <- downloadHandler(
@@ -275,7 +297,13 @@ server <- function(input, output, session) {
   })
   
   output$view2 <- renderDataTable({
-    datatable(dfSig2())
+    current_data <- dfSig2()
+    # Apply scientific notation to the specified columns
+    formatted_data <- force_scientific(current_data, 
+                                       columns = c("Beta", "SE", "P-Value"), 
+                                       digits = 5)
+    # Apply scientific notation on numeric cols
+    datatable(formatted_data)
   })
   
   # output$downloadSig2 <- downloadHandler(
@@ -330,7 +358,12 @@ server <- function(input, output, session) {
   })
   
   output$viewtbl0 <- renderDataTable({
-    datatable(dfSigNet(), selection = list(mode = 'single', target = "row", 
+    current_data <- dfSigNet()
+    # Apply scientific notation to the specified columns
+    formatted_data <- force_scientific(current_data, 
+                                       columns = c("P-val (ADvsAsymAD)", "P-val (AD)"), 
+                                       digits = 5)
+    datatable(formatted_data, selection = list(mode = 'single', target = "row", 
                                            selected = 1
     ), 
     ) %>% formatStyle(2, cursor = 'pointer')
@@ -383,7 +416,7 @@ server <- function(input, output, session) {
     
 
     query <- "SELECT gene_id AS `Gene ID`, meta3_all_P AS `Meta3All-P`, meta2_braak_P AS `Meta2-BRAAK-P`,
-                      meta2_cerad_P AS `Meta2-CERAD-P`, PSD95_P AS `PPP2CA-P`, Ab42_P AS `Ab42-P`, ptau181_P AS `ptau181-P`, 
+                      meta2_cerad_P AS `Meta2-CERAD-P`, PSD95_P AS `PSD95-P`, Ab42_P AS `Ab42-P`, ptau181_P AS `ptau181-P`, 
                       ptau231_P AS `ptau231-P`, ptau181_ttau_P AS `ptau181_ttau-P`, ptau231_ttau_P AS `ptau231_ttau-P`, 
                       C4A_P AS `C4A-P`, C4B_P AS `C4B-P`, PPP2CB_P AS `PPP2CB-P`, PPP2CA_P AS `PPP2CA-P`
                   FROM `presibo1`.`network_eqtl_master_view`;"
@@ -391,7 +424,18 @@ server <- function(input, output, session) {
   })
   
   output$viewtbl12_1 <- renderDataTable({
-    datatable(dfSigNet2())
+    current_data <- dfSigNet2()
+    # Apply scientific notation to the specified columns
+    formatted_data <- force_scientific(current_data, 
+                                       columns = c("Meta3All-P", "Meta2-BRAAK-P",
+                                                   "Meta2-CERAD-P", "PSD95-P",
+                                                   "Ab42-P", "ptau181-P",
+                                                   "ptau231-P", "ptau181_ttau-P",
+                                                   "ptau231_ttau-P", "C4A-P",
+                                                   "C4B-P", "PPP2CB-P", "PPP2CA-P"
+                                                   ), 
+                                       digits = 3)
+    datatable(formatted_data)
   })
   
   # output$downloadSigNet2 <- downloadHandler(
@@ -548,7 +592,13 @@ server <- function(input, output, session) {
   })
   
   output$viewtbl <- renderDataTable({
-    datatable(dfNetGene(), selection = list(mode = 'single', target = "row", 
+    current_data <- dfNetGene()
+    # Apply scientific notation to the specified columns
+    formatted_data <- force_scientific(current_data, 
+                                       columns = c("P-val (ADvsAsymAD)", 
+                                                   "P-val (AD)"), 
+                                       digits = 5)
+    datatable(formatted_data, selection = list(mode = 'single', target = "row", 
                                             selected = 1), 
     ) %>% formatStyle(2, cursor = 'pointer')
   })
@@ -602,7 +652,12 @@ server <- function(input, output, session) {
   })
   
   output$viewtbl2_1 <- renderDataTable({
-    datatable(dfNetGene2())
+    current_data <- dfNetGene2()
+    # Apply scientific notation to the specified columns
+    formatted_data <- force_scientific(current_data, 
+                                       columns = c("BETA", "SE", "P"), 
+                                       digits = 5)
+    datatable(formatted_data)
   })
   
   # output$downloadNetGene2 <- downloadHandler(
@@ -666,7 +721,13 @@ server <- function(input, output, session) {
   })
   
   output$viewtable1 <- renderDataTable({
-    datatable(dfNetDrug(), selection = list(mode = 'single', target = "row", 
+    current_data <- dfNetDrug()
+    # Apply scientific notation to the specified columns
+    formatted_data <- force_scientific(current_data, 
+                                       columns = c("P-val (ADvsAsymAD)", 
+                                                   "P-val (AD)"), 
+                                       digits = 5)
+    datatable(formatted_data, selection = list(mode = 'single', target = "row", 
                                             selected = 1), 
               ) %>% formatStyle(2, cursor = 'pointer')
   })

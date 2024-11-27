@@ -19,6 +19,7 @@ library(tidyverse)
 library(shinymanager)
 library(igraph)
 library(scales)
+library(plotly)
 
 config_file = "config_dp.yml"
 # define some credentials
@@ -134,7 +135,7 @@ server <- function(input, output, session) {
     current_data <- dfPred()
     # Apply scientific notation to the specified columns
     formatted_data <- force_scientific(current_data, 
-                                       columns = c("BETA", "SE", "P"), 
+                                       columns = c("P"), 
                                        digits = 5)
     # Apply scientific notation on numeric cols
     datatable(formatted_data)
@@ -300,7 +301,7 @@ server <- function(input, output, session) {
     current_data <- dfSig2()
     # Apply scientific notation to the specified columns
     formatted_data <- force_scientific(current_data, 
-                                       columns = c("Beta", "SE", "P-Value"), 
+                                       columns = c("P-Value"), 
                                        digits = 5)
     # Apply scientific notation on numeric cols
     datatable(formatted_data)
@@ -655,7 +656,7 @@ server <- function(input, output, session) {
     current_data <- dfNetGene2()
     # Apply scientific notation to the specified columns
     formatted_data <- force_scientific(current_data, 
-                                       columns = c("BETA", "SE", "P"), 
+                                       columns = c("P"), 
                                        digits = 5)
     datatable(formatted_data)
   })
@@ -787,6 +788,40 @@ server <- function(input, output, session) {
   #   filename = function() { paste("Signature_Network", "xlsx", sep = ".")},
   #   content = function(file) {write_xlsx(dfNetDrug2(), path = file)}
   # )
+  
+  ##### Network Guided Drugs Disease Areas Plot #####
+  output$diseaseAreaDonut <- renderPlotly({
+    l_da <- dfNetDrug2()[, "Disease Area"]
+    
+    # Check if data is valid
+    if (is.null(l_da)) {
+      print("Empty plotly")
+      return(plotly_empty())
+    }
+    
+    # aggregate data here
+    df_da <- as.data.frame(table(l_da))
+    
+    # Generate the donut chart
+    plot_ly(
+      df_da,
+      labels = ~l_da,
+      values = ~Freq,
+      type = 'pie',
+      hole = 0.5
+    ) %>%
+      layout(
+        title = "Drug Disease Areas",
+        annotations = list(
+          text = "",
+          font = list(size = 20),
+          showarrow = FALSE,
+          x = 0.5,
+          y = 0.5
+        )
+      )
+  })
+  
   
   ##############Drug Search##############
   dfInd <- reactive({

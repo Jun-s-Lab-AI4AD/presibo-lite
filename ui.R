@@ -13,6 +13,7 @@ library(formattable)
 library(pracma)
 library(shinymanager)
 library(igraph)
+library(plotly)
 
 ui <- dashboardPage(
   dashboardHeader(title = "PreSiBO Lite"),
@@ -325,6 +326,14 @@ ui <- dashboardPage(
                              style="overflow-x: auto;",
                              br(),
                              dataTableOutput("viewtable12_1")
+                           ),
+                           div(
+                             style="display: inline-block;vertical-align:top;",
+                             br(),
+                             h4("Module Drug Breakdown")
+                           ),
+                           div(
+                             plotlyOutput("diseaseAreaDonut")
                            )
                          )
                 )

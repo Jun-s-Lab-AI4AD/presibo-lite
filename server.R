@@ -733,11 +733,11 @@ server <- function(input, output, session) {
               ) %>% formatStyle(2, cursor = 'pointer')
   })
   
-  output$ngd_output1 <- renderText({
-    if (input$source != '') {
-      paste(input$source)
-    }
-  })
+  # output$ngd_output1 <- renderText({
+  #   if (input$source != '') {
+  #     paste(input$source)
+  #   }
+  # })
   
   output$ngd_output2 <- renderText({ 
     row_count = input$viewtable1_rows_selected
